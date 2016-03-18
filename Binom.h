@@ -8,7 +8,6 @@ using namespace std;
 
 #endif // INTTREE_H
 
-//Source : Florent Benaych-Georges M2 IFMA UPMC
 
 //Pour pouvoir retourner le prix et le temps d'arret
 class couple{
