@@ -11,7 +11,7 @@ using namespace std;
 //Source : Florent Benaych-Georges M2 IFMA UPMC
 
 //Pour pouvoir retourner le prix et le temps d'arret
-class retour{
+class couple{
     public :
         int ta;
         float prix;
@@ -23,7 +23,7 @@ class noeud {
         noeud * pere_bas;
         noeud * fils_haut;
         noeud * fils_bas;
-        double valeur ;
+        couple valeur ;
     public :
         noeud() : valeur(), fils_haut(NULL), fils_bas(NULL), pere_haut(NULL), pere_bas(NULL) {};
         //Constructeur
@@ -67,9 +67,9 @@ class noeud {
         return (pere_bas==NULL) ? NULL : pere_bas;};
 
 
-    void set_valeur(double f) {
+    void set_valeur(couple f) {
         valeur = f; }
-    double get_valeur() {
+    couple get_valeur() {
         return valeur;}
 
 
@@ -120,7 +120,7 @@ noeud* noeud::creer_arbre (int n){
 
 
 
-void display(noeud *n, int N){
+Window display(noeud *n, int N){
     int length = 50*(N+2);
     Window w = openWindow(length+50,length);
     int x = 0;
@@ -132,8 +132,51 @@ void display(noeud *n, int N){
         x++;
         compteur ++;
         for(at = pt; at != NULL; at = at->frere_bas()){
-            string s = to_string(int(at->get_valeur()));
-            drawString(50*x,y0+50*y1,s, RED);
+            string s = to_string(int((at->get_valeur()).prix));
+            if((at->get_valeur()).ta == 0){drawString(50*x,y0+50*y1,s, RED);}
+            if((at->get_valeur()).ta == 1){drawString(50*x,y0+50*y1,s, BLACK);}
+            //Pour ne pas avoir de branches qui dépassent de l'arbre
+            if(compteur != N+1){
+                drawLine(50*x,y0+50*y1,50*(x+1),y0-25+50*(y1+1),BLUE);
+                drawLine(50*x,y0+50*y1,50*(x+1),y0+25+50*(y1-1),BLUE);}
+            y1++;
+        }
+        y0 += -25;
+        y1 = 0;
+    }
+    click();
+    return w;
+    //closeWindow(w);
+
+}
+
+float max(float a, float b){
+    if(a<b){return b;}
+    else{return a;}
+}
+
+float PayOff(float S_0, float K, int choix){
+    if(choix == 1){return max(S_0 - K, 0);}
+    else{return max(K-S_0,0);}
+}
+
+void display_traj(noeud *n, int N, float S_0, float K, int choix){
+    int length = 50*(N+2);
+    Window w = openWindow(length+50,length);
+    int x = 0;
+    int y0 = 25*(N+1);
+    int y1 = 0;
+    int compteur = 0;
+    noeud *pt, *at;
+    float p = 0.5;
+
+    for(pt = n; pt != NULL; pt = pt->fb()){
+        x++;
+        compteur ++;
+        for(at = pt; at != NULL; at = at->frere_haut()){
+            string s = to_string(int((at->get_valeur()).prix));
+            if((at->get_valeur()).ta == 0){drawString(50*x,y0+50*y1,s, RED);}
+            if((at->get_valeur()).ta == 1){drawString(50*x,y0+50*y1,s, BLACK);}
             //Pour ne pas avoir de branches qui dépassent de l'arbre
             if(compteur != N+1){
                 drawLine(50*x,y0+50*y1,50*(x+1),y0-25+50*(y1+1),BLUE);
@@ -144,4 +187,29 @@ void display(noeud *n, int N){
         y1 = 0;
     }
 
+    x = 1;
+    y0 = 25*(N+1);
+    float val = S_0;
+    pt = n;
+    while(x<N && PayOff(S_0,K,choix)!=(pt->get_valeur()).prix){
+        float f = (float)rand()/(float)(RAND_MAX);
+        if(f<p){
+            drawLine(50*x,y0,50*(x+1),y0-25,GREEN,2);
+            y0 = y0-25;
+            pt = pt->fh();
+        }
+        else{
+            drawLine(50*x,y0,50*(x+1),y0+25,GREEN,2);
+            y0 = y0+25;
+            pt = pt->fb();
+        }
+        x++;
+    }
+    drawCircle(50*x+10,y0-5,15,GREEN,2);
+
+    click();
+    closeWindow(w);
+
 }
+
+
